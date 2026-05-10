@@ -1,0 +1,25 @@
+{
+  "name": "compliance-worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --fileParallelism=false",
+    "test:ui": "vitest run --ui --fileParallelism=false"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/js-yaml": "^4.0.9",
+    "vitest": "^4.1.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.1",
+    "postgres": "^3.4.9",
+    "zod": "^4.4.2"
+  }
+}

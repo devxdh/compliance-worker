@@ -1,0 +1,64 @@
+# Example `compliance.worker.yaml`
+version: "1.0"
+database:
+  app_schema: "mock_app"
+  engine_schema: "dpdp_engine"
+
+compliance_policy:
+  default_retention_years: 0
+  notice_window_hours: 48
+  retention_rules:
+    - rule_name: "PMLA_FINANCIAL"
+      legal_citation: "Prevention of Money Laundering Act, 2002, Sec 12"
+      if_has_data_in:
+        - "transactions"
+        - "invoices"
+      retention_years: 10
+    - rule_name: "RBI_KYC"
+      legal_citation: "RBI KYC Directions, 2016, Sec 38"
+      if_has_data_in:
+        - "kyc_documents"
+      retention_years: 5
+
+graph:
+  root_table: "users"
+  root_id_column: "id"
+  max_depth: 32
+  notice_email_column: "email"
+  notice_name_column: "full_name"
+  root_pii_columns:
+    email: "HMAC"
+    full_name: "STATIC_MASK"
+
+satellite_targets:
+  - table: "marketing_leads"
+    lookup_column: "email"
+    action: "redact"
+    masking_rules:
+      email: "HMAC"
+      name: "STATIC_MASK"
+  - table: "system_audit_logs"
+    lookup_column: "user_identifier"
+    action: "hard_delete"
+
+blob_targets: []
+
+outbox:
+  batch_size: 10
+  lease_seconds: 60
+  max_attempts: 10
+  base_backoff_ms: 1000
+
+security:
+  notification_lease_seconds: 120
+  master_key_env: "DPDP_MASTER_KEY"
+  hmac_key_env: "DPDP_HMAC_KEY"
+
+integrity:
+  expected_schema_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+
+legal_attestation:
+  dpo_identifier: "dpo-name@client.com"
+  configuration_version: "v1.2.0"
+  legal_review_date: "2026-04-20"
+  acknowledgment: "I confirm this configuration accurately reflects our data retention obligations under DPDP Sec 12."
