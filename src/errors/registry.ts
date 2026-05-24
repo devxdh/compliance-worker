@@ -1,14 +1,14 @@
-import type { WorkerErrorCategory } from "./types";
+import type { RegistryEntry, WorkerErrorCategory } from "./types";
 
 export type ErrorCodeType = keyof typeof ERROR_REGISTRY;
 
-interface RegistryEntry {
+export interface ErrorRegistryTypes {
   title: string;
-  detail?: (data: any) => string;
+  detail: (data: unknown) => string;
   category: WorkerErrorCategory;
   retryable: boolean;
   fatal: boolean;
-};
+}
 
 /**
  * Centralized Error Registry
@@ -51,13 +51,25 @@ export const ERROR_REGISTRY = {
     retryable: false,
     fatal: true,
   },
+  KMS_SECRET_MISSING: {
+    title: "Runtime secret is missing",
+    category: "configuration",
+    retryable: false,
+    fatal: true,
+  },
+  KMS_RESPONSE_INVALID: {
+    title: "Key provider response invalid",
+    category: "external",
+    retryable: false,
+    fatal: true,
+  }
 } as const satisfies Record<string, RegistryEntry>;
 
 /**
  * Type-safe map for error codes derived from @constant {ERROR_REGISTRY}
  * It standardizes the code without writing it manually every time
  * 
- * @example fail(CODE.CONFIG_SIGNATURE_MISSING, {signature:path});
+ * @example fail({ code: CODE.CONFIG_SIGNATURE_MISSING });
  */
 export const CODE = Object.fromEntries(
   Object.keys(ERROR_REGISTRY).map(k => [k, k])

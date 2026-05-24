@@ -55,3 +55,11 @@ export interface WorkerErrorFallback {
   context?: WorkerErrorContext;
   issues?: WorkerValidationIssue[];
 }
+
+export interface RegistryEntry<T = any> {
+  title: string;
+  detail?: (data: T) => string;
+  category: WorkerErrorCategory;
+  retryable: boolean;
+  fatal: boolean;
+};

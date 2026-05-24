@@ -1,4 +1,29 @@
 /**
+ * Web-native byte encoding helpers for Bun/Web Crypto code paths.
+ */
+
+function bytesToBinary(bytes: Uint8Array): string {
+  let output = "";
+  const chunkSize = 0x8000;
+
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    output += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+
+  return output;
+}
+
+/**
+ * Encodes raw bytes as base64.
+ *
+ * @param bytes - Binary payload.
+ * @returns Base64 string.
+ */
+export function bytesToBase64(bytes: Uint8Array): string {
+  return btoa(bytesToBinary(bytes));
+}
+
+/**
  * Decodes Base64 into raw bytes.
  * 
  * @param value - Base64 payload.

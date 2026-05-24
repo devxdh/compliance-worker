@@ -135,32 +135,32 @@ export function inferCode(error: unknown, fallback?: WorkerErrorFallback): Worke
   }
 
   if (error instanceof ZodError) {
-    return "DPDP_VALIDATION_FAILED";
+    return "VALIDATION_FAILED";
   }
 
   if (isAbortLikeError(error)) {
-    return "DPDP_NETWORK_TIMEOUT";
+    return "NETWORK_TIMEOUT";
   }
 
   if (isPostgresError(error)) {
     if (error.code === "40001") {
-      return "DPDP_DB_SERIALIZATION_FAILURE";
+      return "DB_SERIALIZATION_FAILURE";
     }
 
     if (error.code === "40P01") {
-      return "DPDP_DB_DEADLOCK_DETECTED";
+      return "DB_DEADLOCK_DETECTED";
     }
 
     if (error.code === "55P03") {
-      return "DPDP_DB_LOCK_NOT_AVAILABLE";
+      return "DB_LOCK_NOT_AVAILABLE";
     }
 
     if (error.code.startsWith("08")) {
-      return "DPDP_DB_CONNECTION_ERROR";
+      return "DB_CONNECTION_ERROR";
     }
 
-    return "DPDP_DB_ERROR";
+    return "DB_ERROR";
   }
 
-  return "DPDP_INTERNAL_UNEXPECTED";
+  return "INTERNAL_UNEXPECTED";
 }

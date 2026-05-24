@@ -23,3 +23,26 @@ export function assertIdentifier(name: string, label: string): string {
   };
   return name;
 }
+
+/**
+ * Quotes and escapes one SQL identifier.
+ *
+ * @param name - Untrusted identifier text.
+ * @returns Safe quoted identifier.
+ */
+export function quoteIdentifier(name: string): string {
+  return `"${name.replace(/"/g, "\"\"")}"`;
+}
+
+/**
+ * Quotes a `schema.table` pair after validating both identifiers.
+ *
+ * @param schema - Schema identifier.
+ * @param table - Table identifier.
+ * @returns Fully qualified quoted identifier string.
+ * @throws {WorkerError} When either identifier is invalid.
+ */
+export function quoteQualifiedIdentifier(schema: string, table: string): string {
+  return `${quoteIdentifier(assertIdentifier(schema, "schema name"))}.${quoteIdentifier(assertIdentifier(table, "table name"))}`;
+}
+

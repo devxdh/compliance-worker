@@ -16,7 +16,6 @@ import {
   inferTitle
 } from "./inferer";
 import { ZodError } from "zod";
-import { ERROR_REGISTRY, type ErrorCodeType } from "./registry";
 
 function buildCause(cause: unknown): Error | undefined {
   if (cause instanceof Error) return cause;
@@ -151,45 +150,12 @@ export function asWorkerError(error: unknown, fallback: WorkerErrorFallback = {}
 };
 
 /**
- * Normalizes and throws a WorkerError.
- * Supports both pre-defined registry codes and custom error objects.
- * 
- * @param arg - A registered ErrorCodeType string or custom WorkerErrorOptions.
- * @param data - Dynamic context for registry-based error templates.
- * @param cause - The underlying error or reason for the failure.
- * @param extra - Extra information about error like context or issues(zod validation).
+ * Serializes unknown errors into worker problem-details payload.
+ *
+ * @param error - Unknown thrown value.
+ * @param instance - Optional instance path/context identifier.
+ * @returns Structured worker problem details.
  */
-export function fail(options: WorkerErrorOptions): never;
-export function fail(
-  code: ErrorCodeType,
-  data: any,
-  cause?: unknown,
-  extra?: Partial<Pick<WorkerErrorOptions, "context" | "issues">>
-): never;
-
-export function fail(
-  arg: ErrorCodeType | WorkerErrorOptions,
-  data?: any,
-  cause?: unknown,
-  extra?: Partial<Pick<WorkerErrorOptions, "context" | "issues">>
-): never {
-  if (typeof arg === "string") {
-    const meta =
-      ERROR_REGISTRY[arg as ErrorCodeType] ?? ERROR_REGISTRY.UNREGISTERED_ERROR_CODE
-
-    throw new WorkerError({
-      code: arg as WorkerErrorCode,
-      title: meta.title,
-      category: meta.category,
-      fatal: meta.fatal,
-      retryable: meta.retryable,
-      detail: meta.detail(data),
-      cause: cause ?? null,
-      context: extra?.context ?? null,
-      issues: extra?.issues ?? null,
-    });
-  }
-
-  // If it's not a string, assume it's WorkerErrorOptions
-  throw new WorkerError(arg as WorkerErrorOptions);
+export function serializeWorkerError(error: unknown, instance?: string): WorkerProblemDetails {
+  return asWorkerError(error).toProblem(instance);
 }
