@@ -12,7 +12,7 @@ export const fetchJson = async (
   });
   if (!response.ok) {
     fail({
-      code: "DPDP_KMS_PROVIDER_FAILED",
+      code: "KMS_PROVIDER_FAILED",
       title: "Key provider request failed",
       detail: `${provider} responded with HTTP ${response.status}.`,
       category: "external",

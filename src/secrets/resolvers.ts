@@ -1,11 +1,11 @@
 import { CODE, fail } from "@/errors";
-import { decodeKeyMaterial, type KeySourceConfig } from "./kms";
+import { type KeySourceConfig } from "./kms";
 import { readLegacyEnvKey, readRuntimeSecret } from "./reader";
 import type { EnvType } from "@/types";
-import { base64ToBytes } from "@/utils";
-import { normalizeBase64 } from "./kms";
+import { base64ToBytes } from "@/lib";
+import { } from "./kms";
 import { signAwsKmsRequest } from "./kms/signature";
-import { encodeVaultPathSegment, fetchJson, isRecord } from "./repository";
+import { decodeKeyMaterial, encodeVaultPathSegment, fetchJson, isRecord, normalizeBase64 } from "./repository";
 
 export interface ResolveKeyOptions {
   env: EnvType
@@ -24,12 +24,8 @@ async function requiredRuntimeSecret(
   const value = await readRuntimeSecret(env, envName);
   if (!value) {
     fail({
-      code: "DPDP_KMS_SECRET_MISSING",
-      title: "Runtime secret is missing",
+      code: CODE.KMS_SECRET_MISSING,
       detail: `${envName} is required to resolve ${purpose}.`,
-      category: "configuration",
-      retryable: false,
-      fatal: true,
       context: { envName, purpose },
     });
   }
@@ -105,12 +101,8 @@ async function resolveAwsKmsKey(
   const json = await fetchJson(fetchFn, endpoint, { method: "POST", headers, body }, "AWS KMS");
   if (!isRecord(json) || typeof json.Plaintext !== "string") {
     fail({
-      code: "DPDP_KMS_RESPONSE_INVALID",
-      title: "Key provider response invalid",
+      code: CODE.KMS_RESPONSE_INVALID,
       detail: "AWS KMS response did not include a base64 Plaintext field.",
-      category: "external",
-      retryable: false,
-      fatal: true,
       context: { provider: "aws_kms" },
     });
   }
@@ -139,12 +131,8 @@ async function resolveGcpToken(
 
   if (!isRecord(json) || typeof json.access_token !== "string") {
     fail({
-      code: "KMS_RESPONSE_INVALID",
-      title: "Key provider response invalid",
+      code: CODE.KMS_RESPONSE_INVALID,
       detail: "GCP metadata token response did not include access_token.",
-      category: "external",
-      retryable: true,
-      fatal: false,
       context: { provider: "gcp_metadata" },
     })
   }
@@ -174,12 +162,8 @@ async function resolveGcpSecretManagerKey(
   const payload = isRecord(json) && isRecord(json.payload) ? json.payload : null;
   if (!payload || typeof payload.data !== "string") {
     fail({
-      code: "DPDP_KMS_RESPONSE_INVALID",
-      title: "Key provider response invalid",
+      code: CODE.KMS_RESPONSE_INVALID,
       detail: "GCP Secret Manager response did not include payload.data.",
-      category: "external",
-      retryable: false,
-      fatal: true,
       context: { provider: "gcp_secret_manager" },
     });
   }
@@ -196,12 +180,8 @@ async function resolveVaultKey(
   const address = source.address ?? await readRuntimeSecret(options.env, source.address_env);
   if (!address) {
     fail({
-      code: "DPDP_KMS_SECRET_MISSING",
-      title: "Runtime secret is missing",
+      code: CODE.KMS_SECRET_MISSING,
       detail: `${source.address_env} or security key source address is required to resolve ${options.keyName}.`,
-      category: "configuration",
-      retryable: false,
-      fatal: true,
       context: { provider: "hashicorp_vault", addressEnv: source.address_env },
     });
   }
@@ -222,17 +202,17 @@ async function resolveVaultKey(
     headers.set("x-vault-namespace", namespace);
   }
 
-  const json = await fetchJson(fetchFn, url, { method: "GET", headers }, "HashiCorp Vault");
+  const json = await fetchJson(
+    fetchFn,
+    url,
+    { method: "GET", headers },
+    "HashiCorp Vault");
   const data = isRecord(json) && isRecord(json.data) && isRecord(json.data.data) ? json.data.data : null;
   const rawValue = data?.[source.field];
   if (typeof rawValue !== "string") {
     fail({
-      code: "DPDP_KMS_RESPONSE_INVALID",
-      title: "Key provider response invalid",
+      code: CODE.KMS_RESPONSE_INVALID,
       detail: `HashiCorp Vault response did not include data.data.${source.field}.`,
-      category: "external",
-      retryable: false,
-      fatal: true,
       context: { provider: "hashicorp_vault", field: source.field },
     });
   }

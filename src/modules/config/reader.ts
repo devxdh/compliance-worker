@@ -62,7 +62,7 @@ async function readAndValidateWorkerYaml(configPath: string | URL): Promise<Work
     parsedConfig = normalizeWorkerYaml(workerYamlSchema.parse(parsedYaml))
   } catch (error) {
     throw asWorkerError(error, {
-      code: "DPDP_CONFIG_SCHEMA_INVALID",
+      code: "CONFIG_SCHEMA_INVALID",
       title: "Invalid worker configuration",
       category: "configuration",
       retryable: false,

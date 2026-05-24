@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { assertIdentifier, keySourceSchema } from "@/utils";
+import { assertIdentifier } from "@/utils";
+import { keySourceSchema } from "@/secrets";
 
 const isError = (err: unknown, msg: string): string => {
   if (err instanceof Error) {

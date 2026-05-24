@@ -1,5 +1,5 @@
 import type { EnvType } from "@/types";
-import { decodeKeyMaterial } from "./kms";
+import { decodeKeyMaterial } from "./repository";
 import type { ResolveKeyOptions } from "./resolvers";
 
 /**

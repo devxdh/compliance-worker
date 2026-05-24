@@ -1,7 +1,7 @@
 import { fail, CODE } from "@/errors";
+import { readRuntimeSecret } from "@/secrets";
 import type { EnvType } from "@/types";
-import { readRuntimeSecret, base64ToBytes } from "@/utils";
-
+import { base64ToBytes } from "@/lib";
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
     const copy = new Uint8Array(bytes.length);
@@ -24,16 +24,20 @@ export async function verifySignatureWorkerConfig(
 ): Promise<void> {
     const publicKeySpkiBase64 = readRuntimeSecret(
         env,
-        "DPDP_CONFIG_SIGNING_PUBLIC_KEY_SPKI_BASE64"
+        "CONFIG_SIGNING_PUBLIC_KEY_SPKI_BASE64"
     );
     if (!publicKeySpkiBase64) return;
 
-    const signaturePath = env.DPDP_CONFIG_SIGNATURE_PATH ?? `${String(configPath)}.sig`;
+    const signaturePath = env.CONFIG_SIGNATURE_PATH ?? `${String(configPath)}.sig`;
     let signatureBase64: string;
     try {
         signatureBase64 = (await Bun.file(signaturePath).text()).trim();
     } catch (error) {
-        fail(CODE.CONFIG_SIGNATURE_MISSING, { signaturePath }, error)
+        fail({
+            code: CODE.CONFIG_SIGNATURE_MISSING,
+            data: { value: signaturePath },
+            cause: error
+        });
     }
 
     const publicKey = await globalThis.crypto.subtle.importKey(
@@ -52,16 +56,14 @@ export async function verifySignatureWorkerConfig(
     );
 
     if (!verified) {
-        fail(
-            CODE.CONFIG_SIGNATURE_INVALID,
-            { configPath },
-            null,
-            {
-                context: {
-                    configPath: String(configPath),
-                    signaturePath,
-                }
+        fail({
+            code: CODE.CONFIG_SIGNATURE_MISSING,
+            data: { value: String(configPath) },
+            cause: null,
+            context: {
+                configPath: String(configPath),
+                signaturePath,
             }
-        )
+        });
     }
 }

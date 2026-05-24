@@ -1,5 +1,5 @@
 import { fail, CODE } from "@/errors";
-import { base64ToBytes, bytesToHex, copyBytes, hexToBytes } from "@/utils";
+import { base64ToBytes, bytesToHex, copyBytes, hexToBytes } from "@/lib";
 
 const KEY_LENGTH = 32;
 const textEncoder = new TextEncoder();
@@ -10,12 +10,11 @@ function ensureKeyLength(bytes: Uint8Array, keyName: string): Uint8Array {
     return new Uint8Array(bytes);
   }
 
-  fail(
-    CODE.SECRET_ENV_INVALID,
-    { keyName, KEY_LENGTH },
-    null,
-    { context: { keyName } }
-  )
+  fail({
+    code: CODE.SECRET_ENV_INVALID,
+    data: { keyName, KEY_LENGTH },
+    context: { keyName },
+  })
 }
 
 export function normalizeBase64(value: string): string {
@@ -40,11 +39,11 @@ export function decodeKeyMaterial(rawValue: string | Uint8Array, keyName: string
 
   const value = rawValue.trim();
   if (value.length === 0) {
-    fail(
-      CODE.SECRET_ENV_MISSING,
-      { keyName },
-      null,
-      { context: { keyName } })
+    fail({
+      code: CODE.SECRET_ENV_MISSING,
+      data: { keyName },
+      context: { keyName }
+    })
   }
 
   const normalizedHex = value.startsWith("hex:") ? value.slice(4) : value;
@@ -56,12 +55,11 @@ export function decodeKeyMaterial(rawValue: string | Uint8Array, keyName: string
   try {
     return ensureKeyLength(base64ToBytes(normalizeBase64(normalizedBase64)), keyName)
   } catch (error) {
-    fail(
-      CODE.CONFIG_SIGNATURE_INVALID,
-      { keyName, KEY_LENGTH },
-      null,
-      { context: { keyName } }
-    )
+    fail({
+      code: CODE.SECRET_ENV_INVALID,
+      data: { keyName, KEY_LENGTH },
+      context: { keyName }
+    })
   }
 }
 

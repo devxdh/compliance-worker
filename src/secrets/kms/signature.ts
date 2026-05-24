@@ -1,7 +1,7 @@
-import { bytesToHex, copyBytes, hmacSha256, seedSecret } from "@/utils";
-import { sha256Hex } from "../repository"
+import { bytesToHex } from "@/lib";
+import { hmacSha256, seedSecret, sha256Hex } from "../repository"
 
-export interface AwsCredentials {
+export interface KMSAwsCredentials {
   accessKeyId: string;
   secretAccessKey: string;
   sessionToken?: string;
@@ -11,7 +11,7 @@ export async function signAwsKmsRequest(
   endpoint: URL,
   region: string,
   body: string,
-  credentials: AwsCredentials,
+  credentials: KMSAwsCredentials,
   now: Date = new Date()
 ): Promise<Headers> {
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
