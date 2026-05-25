@@ -1,5 +1,5 @@
 import type { Sql } from "@/types";
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import type { NoticeReservation } from "./types";
 import type { VaultRecord } from "../helpers";
 
@@ -42,11 +42,8 @@ export async function reserveNotice(
 
     if (!vault) {
       fail({
-        code: "VAULT_NOT_FOUND",
-        title: "Vault record not found",
-        detail: `Vault record not found for ${appSchema}.${rootTable}#${normalizedSubjectId}.`,
-        category: "validation",
-        retryable: false,
+        code: CODE.VAULT_NOT_FOUND,
+        data: { appSchema, rootTable, normalizedSubjectId }
       });
     }
 

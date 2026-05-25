@@ -1,5 +1,5 @@
 import type { Override } from "@/types";
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import { bytesToBase64 } from "@/lib";
 import type { S3AwsCredentials } from "./type";
 import { resolveAwsCredentials } from "./credentials";
@@ -151,11 +151,8 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
     url = new URL(value);
   } catch {
     fail({
-      code: "BLOB_URL_INVALID",
-      title: "Invalid S3 URL",
+      code: CODE.BLOB_URL_INVALID,
       detail: "Blob target value must be a valid s3:// or https:// S3 URL.",
-      category: "validation",
-      retryable: false,
     });
   }
 
@@ -163,11 +160,8 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
     const key = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
     if (!url.hostname || !key) {
       fail({
-        code: "BLOB_URL_INVALID",
-        title: "Invalid S3 URL",
+        code: CODE.BLOB_URL_INVALID,
         detail: "s3:// blob URL must contain a bucket and object key.",
-        category: "validation",
-        retryable: false,
       });
     }
 
@@ -180,11 +174,9 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
 
   if (url.protocol !== "https:") {
     fail({
-      code: "BLOB_URL_UNSUPPORTED",
+      code: CODE.BLOB_URL_UNSUPPORTED,
       title: "Unsupported blob URL protocol",
       detail: "S3 blob targets must use s3:// or https:// URLs.",
-      category: "validation",
-      retryable: false,
     });
   }
 
@@ -192,11 +184,9 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
   const s3Index = hostParts.findIndex((part) => part === "s3" || part.startsWith("s3-"));
   if (s3Index <= 0 && !url.hostname.startsWith("s3.")) {
     fail({
-      code: "BLOB_URL_UNSUPPORTED",
+      code: CODE.BLOB_URL_UNSUPPORTED,
       title: "Unsupported S3 URL host",
       detail: "HTTPS blob URL must use an Amazon S3 virtual-hosted or path-style hostname.",
-      category: "validation",
-      retryable: false,
     });
   }
 
@@ -204,11 +194,8 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
     const key = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
     if (!key) {
       fail({
-        code: "BLOB_URL_INVALID",
-        title: "Invalid S3 URL",
+        code: CODE.BLOB_URL_INVALID,
         detail: "Virtual-hosted S3 URL must contain an object key.",
-        category: "validation",
-        retryable: false,
       });
     }
 
@@ -222,11 +209,9 @@ export function parseS3ObjectUrl(value: string): S3ObjectPointer {
   const [bucket, ...keyParts] = url.pathname.replace(/^\/+/, "").split("/");
   if (!bucket || keyParts.length === 0) {
     fail({
-      code: "BLOB_URL_INVALID",
+      code: CODE.BLOB_URL_INVALID,
       title: "Invalid S3 path-style URL",
       detail: "Path-style S3 URL must contain bucket and key path segments.",
-      category: "validation",
-      retryable: false,
     });
   }
 

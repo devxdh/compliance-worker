@@ -1,7 +1,7 @@
 import { sha256HexDigest } from "@/lib";
 import type { Sql, Tsql } from "@/types";
 import { canonicalJsonStringify } from "@/utils";
-import { asWorkerError, fail } from "@/errors";
+import { asWorkerError, CODE, fail } from "@/errors";
 import type { OutboxEvent } from "./types";
 import { calculateRetryDelayMs } from "./shared";
 
@@ -191,11 +191,8 @@ export async function markOutboxEventProcessed(
 
   if (updated.length === 0) {
     fail({
-      code: "OUTBOX_LEASE_LOST",
-      title: "Outbox lease lost",
+      code: CODE.OUTBOX_LEASE_LOST,
       detail: `Outbox lease for event ${eventId} was lost before it could be marked processed.`,
-      category: "concurrency",
-      retryable: true,
       context: { eventId },
     });
   }
@@ -242,11 +239,8 @@ export async function extendOutboxLeases(
 
   if (!rows.some((row) => row.id === currentEventId)) {
     fail({
-      code: "OUTBOX_LEASE_LOST",
-      title: "Outbox lease lost",
+      code: CODE.OUTBOX_LEASE_LOST,
       detail: `Outbox lease for event ${currentEventId} was lost before dispatch.`,
-      category: "concurrency",
-      retryable: true,
       context: { eventId: currentEventId },
     });
   }
@@ -299,11 +293,8 @@ export async function markOutboxEventFailed(
 
   if (updated.length === 0) {
     fail({
-      code: "OUTBOX_LEASE_LOST",
-      title: "Outbox lease lost",
+      code: CODE.OUTBOX_LEASE_LOST,
       detail: `Outbox lease for event ${event.id} was lost before it could be retried.`,
-      category: "concurrency",
-      retryable: true,
       context: { eventId: event.id },
     });
   }
@@ -347,11 +338,8 @@ export async function releaseOutboxLease(
 
   if (updated.length === 0) {
     fail({
-      code: "OUTBOX_LEASE_LOST",
-      title: "Outbox lease lost",
+      code: CODE.OUTBOX_LEASE_LOST,
       detail: `Outbox lease for event ${eventId} was lost before it could be released.`,
-      category: "concurrency",
-      retryable: true,
       context: { eventId },
     });
   }

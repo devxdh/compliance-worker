@@ -61,5 +61,5 @@ export interface RegistryEntry<T = any> {
   detail?: (data: T) => string;
   category: WorkerErrorCategory;
   retryable: boolean;
-  fatal: boolean;
+  fatal?: boolean;
 };

@@ -1,6 +1,6 @@
 import type { Sql } from "@/types";
 import { getLogger, logError } from "@/utils";
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import { base64ToBytes, sha256HexDigest } from "@/lib";
 import { decryptGCMBytes, unwrapKey } from "@modules/crypto";
 import type { MockMailer } from "./types";
@@ -50,11 +50,7 @@ export async function dispatchPreErasureNotice(
     String(subjectId).trim().length === 0
   ) {
     fail({
-      code: "NOTIFICATION_USER_ID_INVALID",
-      title: "Invalid root identifier",
-      detail: "subjectId must be a non-empty string or number.",
-      category: "validation",
-      retryable: false,
+      code: `NOTIFIER_${CODE.USER_ID_INVALID}`
     });
   }
 
@@ -75,11 +71,8 @@ export async function dispatchPreErasureNotice(
   );
   if (!vault) {
     fail({
-      code: "VAULT_NOT_FOUND",
-      title: "Vault record not found",
-      detail: `Vault record not found for ${appSchema}.${rootTable}#${normalizedSubjectId}.`,
-      category: "validation",
-      retryable: false,
+      code: CODE.VAULT_NOT_FOUND,
+      data: { appSchema, rootTable, normalizedSubjectId }
     });
   }
 

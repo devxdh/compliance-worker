@@ -1,5 +1,5 @@
 import type { Sql } from "@/types";
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import {
   assertWorkerSecrets,
   createUserHash,
@@ -33,11 +33,7 @@ export async function vaultUser(
     String(subjectId).trim().length === 0
   ) {
     fail({
-      code: "VAULT_USER_ID_INVALID",
-      title: "Invalid root identifier",
-      detail: "subjectId must be a non-empty string or number.",
-      category: "validation",
-      retryable: false,
+      code: `VAULT_${CODE.USER_ID_INVALID}`
     });
   }
 

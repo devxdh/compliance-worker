@@ -1,4 +1,4 @@
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import z from "zod";
 import type { S3AwsCredentials } from "./type";
 
@@ -108,12 +108,8 @@ async function fetchWithTimeout(fetchFn: typeof fetch, url: string, init: Reques
     });
   } catch (error) {
     fail({
-      code: "AWS_CREDENTIALS_UNAVAILABLE",
-      title: "AWS credentials unavailable",
+      code: CODE.AWS_CREDENTIALS_UNAVAILABLE,
       detail: error instanceof Error ? error.message : "AWS credential endpoint could not be reached.",
-      category: "configuration",
-      retryable: true,
-      fatal: false,
       context: { url },
     });
   } finally {
@@ -125,10 +121,8 @@ async function readJsonCredentials(fetchFn: typeof fetch, url: string, init: Req
   const response = await fetchWithTimeout(fetchFn, url, init, timeoutMs);
   if (!response.ok) {
     fail({
-      code: "AWS_CREDENTIALS_UNAVAILABLE",
-      title: "AWS credentials unavailable",
+      code: CODE.AWS_CREDENTIALS_UNAVAILABLE,
       detail: `AWS credential endpoint returned HTTP ${response.status}.`,
-      category: "configuration",
       retryable: response.status >= 500 || response.status === 429,
       fatal: response.status >= 400 && response.status < 500 && response.status !== 429,
       context: { url },
@@ -140,12 +134,8 @@ async function readJsonCredentials(fetchFn: typeof fetch, url: string, init: Req
     body = await response.json();
   } catch {
     fail({
-      code: "AWS_CREDENTIALS_INVALID",
-      title: "AWS credentials invalid",
+      code: CODE.AWS_CREDENTIALS_INVALID,
       detail: "AWS credential endpoint returned non-JSON credentials.",
-      category: "configuration",
-      retryable: false,
-      fatal: true,
       context: { url },
     });
   }
@@ -153,12 +143,8 @@ async function readJsonCredentials(fetchFn: typeof fetch, url: string, init: Req
   const parsed = awsCredentialResponseSchema.safeParse(body);
   if (!parsed.success) {
     fail({
-      code: "AWS_CREDENTIALS_INVALID",
-      title: "AWS credentials invalid",
+      code: CODE.AWS_CREDENTIALS_INVALID,
       detail: "AWS credential endpoint returned an unexpected response shape.",
-      category: "configuration",
-      retryable: false,
-      fatal: true,
       context: {
         url,
         issues: parsed.error.issues.map((issue) => ({
@@ -191,12 +177,8 @@ async function resolveEc2RoleName(fetchFn: typeof fetch, timeoutMs: number): Pro
   );
   if (!tokenResponse.ok) {
     fail({
-      code: "AWS_CREDENTIALS_UNAVAILABLE",
-      title: "AWS IMDS unavailable",
+      code: CODE.AWS_CREDENTIALS_UNAVAILABLE,
       detail: `EC2 metadata token endpoint returned HTTP ${tokenResponse.status}.`,
-      category: "configuration",
-      retryable: true,
-      fatal: false,
     });
   }
 
@@ -213,24 +195,16 @@ async function resolveEc2RoleName(fetchFn: typeof fetch, timeoutMs: number): Pro
   );
   if (!roleResponse.ok) {
     fail({
-      code: "AWS_CREDENTIALS_UNAVAILABLE",
-      title: "AWS IMDS role unavailable",
+      code: CODE.AWS_CREDENTIALS_UNAVAILABLE,
       detail: `EC2 metadata role endpoint returned HTTP ${roleResponse.status}.`,
-      category: "configuration",
-      retryable: true,
-      fatal: false,
     });
   }
 
   const roleName = (await roleResponse.text()).trim().split("\n")[0];
   if (!roleName) {
     fail({
-      code: "AWS_CREDENTIALS_UNAVAILABLE",
-      title: "AWS IMDS role missing",
+      code: CODE.AWS_CREDENTIALS_UNAVAILABLE,
       detail: "EC2 metadata did not return an IAM role name.",
-      category: "configuration",
-      retryable: true,
-      fatal: false,
     });
   }
 

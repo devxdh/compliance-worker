@@ -1,4 +1,4 @@
-import { fail } from "@/errors";
+import { CODE, fail } from "@/errors";
 import { getLogger } from "@/utils";
 import type { Sql } from "@/types";
 import { countPendingBlobObjectsForUser, shredBlobObjects } from "./blob";
@@ -61,11 +61,7 @@ export async function shredUser(
 ): Promise<ShredUserResult> {
   if ((typeof subjectId !== "string" && typeof subjectId !== "number") || String(subjectId).trim().length === 0) {
     fail({
-      code: "SHREDDER_USER_ID_INVALID",
-      title: "Invalid root identifier",
-      detail: "subjectId must be a non-empty string or number.",
-      category: "validation",
-      retryable: false,
+      code: `SHREDDER_${CODE.USER_ID_INVALID}`
     });
   }
 
@@ -78,11 +74,8 @@ export async function shredUser(
   const vault = await getVaultRecordByUserId(sql, engineSchema, appSchema, normalizedSubjectId, rootTable);
   if (!vault) {
     fail({
-      code: "SHREDDER_VAULT_NOT_FOUND",
-      title: "Vault record not found",
-      detail: `Vault record not found for ${appSchema}.${rootTable}#${normalizedSubjectId}.`,
-      category: "validation",
-      retryable: false,
+      code: `SHREDDER_${CODE.VAULT_NOT_FOUND}`,
+      data: { appSchema, rootTable, normalizedSubjectId }
     });
   }
 

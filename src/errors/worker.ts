@@ -19,12 +19,12 @@ import { ZodError } from "zod";
 
 function buildCause(cause: unknown): Error | undefined {
   if (cause instanceof Error) return cause;
-  if (cause === undefined) return undefined;
+  if (cause === null) return undefined;
 
   return new Error(typeof cause === "string" ? cause : JSON.stringify(cause));
 }
 
-function normalizeErrorType(code: WorkerErrorCode): string {
+export function normalizeErrorType(code: WorkerErrorCode): string {
   return `urn:dpdp:worker:error:${code.toLowerCase().replace(/^dpdp_/, "")}`;
 }
 

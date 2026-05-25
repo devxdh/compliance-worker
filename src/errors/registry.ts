@@ -62,6 +62,52 @@ export const ERROR_REGISTRY = {
     category: "external",
     retryable: false,
     fatal: true,
+  },
+  VAULT_NOT_FOUND: {
+    title: "Vault record not found",
+    detail: (
+      data: {
+        appSchema: string,
+        rootTable: string,
+        normalizedSubjectId: string
+      }
+    ) => `Vault record not found for ${data.appSchema}.${data.rootTable}#${data.normalizedSubjectId}.`,
+    category: "validation",
+    retryable: false,
+    fatal: false
+  },
+  USER_ID_INVALID: {
+    title: "Invalid root identifier",
+    detail: () => "subjectId must be a non-empty string or number.",
+    category: "validation",
+    retryable: false,
+  },
+  OUTBOX_LEASE_LOST: {
+    title: "Outbox lease lost",
+    category: "concurrency",
+    retryable: true,
+  },
+  BLOB_URL_INVALID: {
+    title: "Invalid S3 URL",
+    category: "validation",
+    retryable: false,
+  },
+  BLOB_URL_UNSUPPORTED: {
+    title: "Unsupported blob URL protocol",
+    category: "validation",
+    retryable: false,
+  },
+  AWS_CREDENTIALS_INVALID: {
+    title: "AWS credentials invalid",
+    category: "configuration",
+    retryable: false,
+    fatal: true,
+  },
+  AWS_CREDENTIALS_UNAVAILABLE: {
+    title: "AWS IMDS unavailable",
+    category: "configuration",
+    retryable: true,
+    fatal: false,
   }
 } as const satisfies Record<string, RegistryEntry>;
 
